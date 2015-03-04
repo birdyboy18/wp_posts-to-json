@@ -8,7 +8,7 @@ Author URI: http://www.github.com/birdyboy18
 Version: 0.0.1
 */
 
-add_action('init', 'ifExists');
+add_action('plugins_loaded', 'ifExists');
 
 //check to see if the file exists first
 function ifExists() {
@@ -16,17 +16,18 @@ function ifExists() {
   $file = plugin_dir_path(__FILE__) . '/posts.json';
 
   if (file_exists($file)) {
-    add_action('post_publish', 'generate_json($file)');
-    add_action('post_updated', 'generate_json($file)');
-    add_action('delete_post', 'generate_json($file)');
+    add_action('post_publish', 'generate_json');
+    add_action('post_updated', 'generate_json');
+    add_action('delete_post', 'generate_json');
   } else {
     touch('posts.json');
-    generate_json($file);
+    generate_json();
   }
 }
 
 //generate the json file with all the posts in it.
-function generate_json($file) {
+function generate_json() {
+  $file = plugin_dir_path(__FILE__) . '/posts.json';
   //set up an array for the posts
   $posts = array();
 
@@ -60,24 +61,37 @@ function generate_json($file) {
     $cats = array();
 
     foreach ($categories as $cat) {
-      $cats[] = $cat->cat_name;
+      $cats[] = array(
+        'name' => $cat->cat_name,
+        'link' => get_category_link($cat->term_id)
+      );
     }
 
     //get the tags
     $post_tags = get_the_tags();
     $tags = array();
-
-    foreach($post_tags as $tag) {
-      $tags[] = $tag->name;
+    if (is_array($post_tags)) {
+      foreach($post_tags as $tag) {
+        $tags[] = array(
+          'name' => $tag->name,
+          'link' => get_tag_link($tag->term_id)
+        );
+      }
     }
 
     $data = array(
       'categories' => $cats,
       'tags' => $tags,
       'url' => get_permalink(),
-      'date' => get_the_date('Y-m-d H:i'),
+      'date' => get_the_date('jS F Y'),
       'title' => $title,
-      'content' => $content
+      'content' => $content,
+      'excerpt' => get_the_excerpt(),
+      'author' => array(
+        'name' => get_the_author(),
+        'link' => get_author_posts_url(get_the_author_meta('ID')),
+        'avatar' => get_avatar(get_the_author_meta('ID'))
+      )
     );
     array_push($posts, $data);
   }
