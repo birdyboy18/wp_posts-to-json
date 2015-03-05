@@ -8,7 +8,7 @@ Author URI: http://www.github.com/birdyboy18
 Version: 0.0.1
 */
 
-add_action('plugins_loaded', 'ifExists');
+add_action('init', 'ifExists');
 
 //check to see if the file exists first
 function ifExists() {
@@ -50,7 +50,7 @@ function generate_json() {
     $content = wp_strip_all_tags($content);
     $content = preg_replace('/[\n-\r]/', '', $content);
     $content = preg_replace('(\[[^\]]*\])', '',$content);
-    $content = html_entity_decode($content);
+    $content = html_entity_decode($content, ENT_QUOTES, 'UTF-8');
 
     $title = get_the_title();
     $title = html_entity_decode($title);
