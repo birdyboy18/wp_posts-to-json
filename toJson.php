@@ -35,7 +35,7 @@ function generate_json() {
   $post_args = array(
     'post_type' => 'post',
     'posts_per_page' => -1,
-    'post_status' => 'published'
+    'post_status' => array('publish')
   );
 
   $the_query = new WP_Query($post_args);
